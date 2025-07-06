@@ -1,2 +1,4 @@
-# testcontainers-plugin
-Testcontainers Plugin
+Use 
+existing 
+testcontainers-scala
+implementation for the time being.
