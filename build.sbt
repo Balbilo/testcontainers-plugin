@@ -16,28 +16,59 @@ ThisBuild / run / fork                := true
 ThisBuild / Test / parallelExecution  := true
 ThisBuild / Test / testForkedParallel := true
 
-lazy val modulesDirName = "modules"
+lazy val modulesDirName  = "modules"
 lazy val testcomposeName = "testcompose"
+lazy val examplesName    = "examples"
 
 def createTestcomposeModule(moduleName: String): Project = {
   val moduleFullName = s"$testcomposeName-$moduleName"
   Project(moduleFullName, file(s"$modulesDirName/$moduleName"))
 }
 
+def createExamplesModule(moduleName: String): Project = {
+  val moduleFullName = s"$examplesName-$moduleName"
+  Project(moduleFullName, file(s"$examplesName/$moduleName"))
+}
+
 lazy val root = Project(testcomposeName, file("."))
   .settings(Aliases.all)
 
-lazy val testcontainers4sModules = Project(modulesDirName, file(modulesDirName))
-  .aggregate()
+lazy val testcomposeModules = Project(modulesDirName, file(modulesDirName))
+  .aggregate(sbtModule, testcomposeCore)
 
 lazy val sbtModule = Project("sbt-testcompose", file(s"$modulesDirName/sbt"))
-  .enablePlugins(BuildInfoPlugin)
-  .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion))
+//  .enablePlugins(BuildInfoPlugin)
+//  .settings(buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion))
   .settings(scalaVersion := "2.12.20")
   .settings(sbtPlugin := true)
 
 lazy val testcomposeCore = createTestcomposeModule("core")
-  .withDependencies(Dependencies.testcontainers)
+  .withDependencies(
+    Dependencies.testcontainers,
+    Dependencies.testcontainersScalaCore,
+    Dependencies.catsEffectKernel,
+    Dependencies.jacksonDataformatYaml,
+  )
+
+lazy val testcomposeZIO = createTestcomposeModule("zio")
+  .dependsOn(testcomposeCore)
+  .withDependencies(
+    Dependencies.zio
+  )
+
+// EXAMPLES
+lazy val examplesModules = Project(examplesName, file(examplesName))
+
+lazy val examplesZIOScalatest = createExamplesModule("zio-scalatest")
+  .enablePlugins(TestcomposePlugin)
+  .dependsOn(testcomposeZIO)
+  .withDependencies(
+    Dependencies.zio,
+    Dependencies.testcontainers,
+    Dependencies.testcontainersScalaCore,
+    Dependencies.catsEffectKernel,
+    Dependencies.jacksonDataformatYaml,
+  )
 
 //
 //lazy val backendTestKitModule = createBackendModule("test-kit")(None)
