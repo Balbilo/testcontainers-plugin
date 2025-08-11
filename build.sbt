@@ -1,4 +1,5 @@
 import Projects.*
+import org.typelevel.sbt.NoPublishPlugin
 
 val enableScalaLint = sys.env.getOrElse("ENABLE_SCALA_LINT_ON_COMPILE", "true").toBoolean
 
@@ -15,6 +16,46 @@ ThisBuild / Test / fork               := true
 ThisBuild / run / fork                := true
 ThisBuild / Test / parallelExecution  := true
 ThisBuild / Test / testForkedParallel := true
+
+ThisBuild / tlBaseVersion := "0.0"
+ThisBuild / startYear     := Some(2025)
+ThisBuild / licenses      := Seq(License.Apache2)
+ThisBuild / developers := List(
+  tlGitHubDev("andrewrigas", "Andreas Rigas")
+)
+ThisBuild / githubWorkflowJavaVersions := Seq("11", "17", "21").map(JavaSpec.temurin)
+ThisBuild / githubWorkflowAddedJobs ++= Seq(
+  WorkflowJob(
+    id = "checklint",
+    name = "Check code style",
+    scalas = List(scalaVersion.value),
+    steps = List(WorkflowStep.Checkout) ++ WorkflowStep.SetupJava(
+      List(githubWorkflowJavaVersions.value.last)
+    ) ++ githubWorkflowGeneratedCacheSteps.value ++ List(
+      WorkflowStep.Sbt(
+        List("checkLint"),
+        name = Some("Check Scalafmt and Scalafix rules"),
+      )
+    ),
+  ),
+  WorkflowJob(
+    id = "Codecov",
+    name = "Codecov",
+    scalas = List(scalaVersion.value),
+    steps = List(WorkflowStep.Checkout) ++ WorkflowStep.SetupJava(
+      List(githubWorkflowJavaVersions.value.last)
+    ) ++ githubWorkflowGeneratedCacheSteps.value ++ List(
+      WorkflowStep.Sbt(List("coverage", "test", "coverageAggregate")),
+      WorkflowStep.Use(
+        UseRef.Public(
+          "codecov",
+          "codecov-action",
+          "v3.1.1",
+        )
+      ),
+    ),
+  ),
+)
 
 lazy val modulesDirName  = "modules"
 lazy val testcomposeName = "testcompose"
@@ -43,6 +84,7 @@ lazy val sbtModule = Project("sbt-testcompose", file(s"$modulesDirName/sbt"))
   .settings(sbtPlugin := true)
 
 lazy val testcomposeCore = createTestcomposeModule("core")
+  .enablePlugins(NoPublishPlugin)
   .withDependencies(
     Dependencies.testcontainers,
     Dependencies.testcontainersScalaCore,
@@ -60,7 +102,8 @@ lazy val testcomposeZIO = createTestcomposeModule("zio")
 lazy val examplesModules = Project(examplesName, file(examplesName))
 
 lazy val examplesZIOScalatest = createExamplesModule("zio-scalatest")
-  .enablePlugins(TestcomposePlugin)
+//  .enablePlugins(TestcomposePlugin)
+  .enablePlugins(NoPublishPlugin)
   .dependsOn(testcomposeZIO)
   .withDependencies(
     Dependencies.zio,
