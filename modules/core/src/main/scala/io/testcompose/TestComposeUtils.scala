@@ -12,33 +12,23 @@ private[testcompose] object TestComposeUtils {
   private lazy val tempFilePrefix    = ".testcontainers"
 
   /** Remove ports section from compose.yaml files. Since testcontainers supports dynamic port assignment for containers
-    * using socat executing test using the library should not rely on ports defined in docker-compose file
+    * using socat executing test using the library should not rely on ports defined in docker compose file
     *
     * @example
     *   {{{
-    *   # Input docker-compose file
+    *   # Input docker compose file
     *   services:
     *   test-containers-service:
-    *     image: ${DOCKER_REPOSITORY}/examples-testcontainers-core:latest
+    *     image: ${DOCKER_REPOSITORY}/example-container:latest
     *     ports: <- This section will be removed
     *       - "8080:8080"
     *     restart: always
-    *     environment:
-    *       LOG_ENVIRONMENT: "docker-compose"
-    *       LOG_SERVICE_NAME: "opt-out-proxy"
-    *       LOG_TOP_TENANT: "top"
-    *       LOG_SERVICE_ID: "SCV123JDN"
     *
     *   # Output docker-compose file
     *   services:
     *   test-containers-service:
-    *     image: ${DOCKER_REPOSITORY}/examples-testcontainers-core:latest
+    *     image: ${DOCKER_REPOSITORY}/example-container:latest
     *     restart: always
-    *     environment:
-    *       LOG_ENVIRONMENT: "docker-compose"
-    *       LOG_SERVICE_NAME: "opt-out-proxy"
-    *       LOG_TOP_TENANT: "top"
-    *       LOG_SERVICE_ID: "SCV123JDN"
     *   }}}
     */
   def removePortsAndWriteTemp(composeFile: File, testName: String): File = {
@@ -46,7 +36,7 @@ private[testcompose] object TestComposeUtils {
     val node                = mapper.readTree(composeFile)
     val composeTempFileName = s"$tempFilePrefix-temp-$testName.yaml"
 
-    node.get(servicesFieldName).fields().forEachRemaining { service =>
+    node.get(servicesFieldName).properties().forEach { service =>
       val serviceNode = service.getValue.asInstanceOf[ObjectNode]
       val _           = serviceNode.remove(portsFieldName)
     }

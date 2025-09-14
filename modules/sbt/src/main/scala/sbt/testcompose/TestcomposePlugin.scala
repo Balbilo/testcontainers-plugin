@@ -9,8 +9,8 @@ object TestcomposePlugin extends AutoPlugin {
   import autoImport.*
 
   override def globalSettings: Seq[Setting[?]] = Def.settings(
-    disableTestcomposePrompt := true,
-    testcomposePluginPrompt  := bootstrapPluginPrompt().value,
+    dockerDisableTestcomposePrompt := true,
+    testcomposePluginPrompt        := bootstrapPluginPrompt().value,
   )
 
   override def buildSettings: Seq[Def.Setting[_]] = Def.settings(

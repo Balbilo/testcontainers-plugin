@@ -5,6 +5,13 @@ import com.dimafeng.testcontainers.DockerComposeContainer.ComposeFile
 
 import scala.collection.mutable
 
+/** Test base trait that allows users to run tests using testcontainers or an against already running environment.
+ *
+ * @tparam F[_]
+ *   The effect type used in the context
+ * @tparam Context
+ *   The Context provided to each test
+ */
 class TestComposeContainer(
     composeFiles: ComposeFile,
     exposedServices: Seq[ExposedService] = Seq.empty,

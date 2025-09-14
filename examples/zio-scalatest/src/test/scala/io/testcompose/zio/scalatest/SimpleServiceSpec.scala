@@ -1,6 +1,7 @@
-package io.testcompose.zio
+package io.testcompose.zio.scalatest
 
 import io.testcompose.ZTestComposeBase
+import io.testcompose.zio.SimpleServiceSpec.*
 
 class SimpleServiceSpec extends ZTestComposeBase[SimpleServiceConfig, SimpleServiceContext] {
 
@@ -12,5 +13,6 @@ class SimpleServiceSpec extends ZTestComposeBase[SimpleServiceConfig, SimpleServ
 }
 
 object SimpleServiceSpec {
-  final case class 
+  final case class SimpleServiceContext()
+  final case class SimpleServiceConfig()
 }

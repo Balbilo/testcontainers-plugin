@@ -73,6 +73,7 @@ def createExamplesModule(moduleName: String): Project = {
 
 lazy val root = Project(testcomposeName, file("."))
   .settings(Aliases.all)
+  .aggregate(testcomposeModules, examplesModules)
 
 lazy val testcomposeModules = Project(modulesDirName, file(modulesDirName))
   .aggregate(sbtModule, testcomposeCore)
@@ -92,26 +93,44 @@ lazy val testcomposeCore = createTestcomposeModule("core")
     Dependencies.jacksonDataformatYaml,
   )
 
-lazy val testcomposeZIO = createTestcomposeModule("zio")
+lazy val testcomposeZIOScalatest = createTestcomposeModule("zio-scalatest")
   .dependsOn(testcomposeCore)
   .withDependencies(
-    Dependencies.zio
+    Dependencies.scalatest,
+    Dependencies.testcontainersScalatest,
+    Dependencies.zio,
   )
 
 // EXAMPLES
 lazy val examplesModules = Project(examplesName, file(examplesName))
+  .aggregate(examplesZIOScalatest)
+
+lazy val service = createExamplesModule("service")
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
+  .withDependencies(
+    Dependencies.zio,
+    Dependencies.zioConfig,
+    Dependencies.zioConfigMagnolia,
+    Dependencies.zioConfigTypesafe,
+    Dependencies.zioInteropCats,
+    Dependencies.zioLogging,
+    Dependencies.zioLoggingSL4J,
+    Dependencies.logback,
+    Dependencies.julToSlf4j,
+    Dependencies.http4sDsl,
+    Dependencies.http4sCirce,
+    Dependencies.http4sEmberServer,
+    Dependencies.http4sEmberClient,
+    Dependencies.smithy4sHttp4s,
+    Dependencies.circeCore,
+    Dependencies.circeParser,
+    Dependencies.circeGeneric,
+  )
 
 lazy val examplesZIOScalatest = createExamplesModule("zio-scalatest")
 //  .enablePlugins(TestcomposePlugin)
   .enablePlugins(NoPublishPlugin)
-  .dependsOn(testcomposeZIO)
-  .withDependencies(
-    Dependencies.zio,
-    Dependencies.testcontainers,
-    Dependencies.testcontainersScalaCore,
-    Dependencies.catsEffectKernel,
-    Dependencies.jacksonDataformatYaml,
-  )
+  .dependsOn(testcomposeZIOScalatest)
 
 //
 //lazy val backendTestKitModule = createBackendModule("test-kit")(None)

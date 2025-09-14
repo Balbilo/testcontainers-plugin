@@ -3,7 +3,6 @@ package sbt.testcompose
 import sbt.*
 import sbt.Defaults.testOnlyParser
 import sbt.Keys.*
-import sbt.testcompose.TestcomposePlugin.autoImport.{nothingSetting, bootstrapPluginPrompt}
 import sjsonnew.*
 
 import scala.Console
@@ -24,16 +23,16 @@ trait TestcomposeKeys {
 
   lazy val testcomposePluginPrompt = settingKey[Unit]("plugin on loading message")
 
-  lazy val dockerComposeUp          = taskKey[Unit]("docker compose up")
-  lazy val dockerPs                 = taskKey[Unit]("docker ps")
-  lazy val dockerComposeRestart     = taskKey[Unit]("docker compose restart")
-  lazy val dockerComposeDown        = taskKey[Unit]("docker compose down")
-  lazy val dockerImageCreation      = taskKey[Unit]("creates docker images needed for the test to run")
-  lazy val dockerComposeTest        = taskKey[Unit]("docker compose test")
-  lazy val dockerRepositoryEnv      = settingKey[Option[String]]("docker repository for images published")
-  lazy val dockerImageVersionEnv    = settingKey[Option[String]]("docker image version published locally")
-  lazy val dockerComposeFileEnv     = settingKey[Map[String, String]]("additional docker compose file variables")
-  lazy val disableTestcomposePrompt = settingKey[Boolean]("helper table prompt with commands available")
+  lazy val dockerComposeUp                = taskKey[Unit]("docker compose up")
+  lazy val dockerPs                       = taskKey[Unit]("docker ps")
+  lazy val dockerComposeRestart           = taskKey[Unit]("docker compose restart")
+  lazy val dockerComposeDown              = taskKey[Unit]("docker compose down")
+  lazy val dockerImageCreation            = taskKey[Unit]("creates docker images needed for the test to run")
+  lazy val dockerComposeTest              = taskKey[Unit]("docker compose test")
+  lazy val dockerRepositoryEnv            = settingKey[Option[String]]("docker repository for images published")
+  lazy val dockerImageVersionEnv          = settingKey[Option[String]]("docker image version published locally")
+  lazy val dockerComposeFileEnv           = settingKey[Map[String, String]]("additional docker compose file variables")
+  lazy val dockerDisableTestcomposePrompt = settingKey[Boolean]("helper table prompt with commands available")
 
   lazy val it     = taskKey[Unit]("integrated test against prepared environment (similar to test)")
   lazy val itOnly = inputKey[Unit]("integrated testOnly against prepared environment (similar to testOnly)")
@@ -209,7 +208,7 @@ trait TestcomposeKeys {
     IO.write(envFile, dockerComposeEnv.mkString("\n"))
 
   private[testcompose] def bootstrapPluginPrompt(colour: String = GREEN) = Def.setting {
-    if (disableTestcomposePrompt.value) ()
+    if (dockerDisableTestcomposePrompt.value) ()
     else {
       val message =
         """
